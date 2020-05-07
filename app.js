@@ -6,7 +6,9 @@ var timer = new Vue({
     timeLeft: -1,
     timestampEnd: -1,
     intervalUpdater: undefined,
-    displayTimeLeft: -1
+    displayTimeLeft: -1,
+    alarm: new Audio('alarm.mp4'),
+    alarmActive: false
   },
   methods: {
     startTimer: function (seconds){
@@ -35,7 +37,12 @@ var timer = new Vue({
       this.displayTimeLeft = -1
       clearInterval(this.intervalUpdater);
       this.intervalUpdater = undefined;
-      console.log("attempted to clear intervalUpdater: ", this.intervalUpdater);
+
+      if(this.alarmActive == true){
+        this.alarmActive = false;
+        this.alarm.pause();
+        this.alarm.currentTime = 0;
+      }
     },
     updateDisplayTimeLeft: function(){
       if(this.paused){
@@ -43,26 +50,28 @@ var timer = new Vue({
       }
       else{
         this.displayTimeLeft = Math.round(this.timestampEnd - (new Date().getTime() / 1000));
+        if(this.alarmActive == false && this.displayTimeLeft < 1){
+          this.alarmActive = true;
+          this.alarm.play();
+        }
       }
     },
     pause: function(){
       this.paused = true;
       this.timeLeft = Math.ceil(this.timestampEnd - (new Date().getTime() / 1000));
-
       this.timerActive = true;
       this.timestampEnd = -1;
-
+      
       clearInterval(this.intervalUpdater);
       this.intervalUpdater = undefined;
-      console.log("attempted to clear intervalUpdater: ", this.intervalUpdater);
 
-      console.log("Paused timer");
+      this.alarm.pause();
     },
     unpause: function(){
       this.startTimer(this.timeLeft)
       this.timeLeft = -1;
       this.paused = false;
-      console.log("Unpaused timer");
+      this.alarm.play();
     }
   }
 })
